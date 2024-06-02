@@ -1,0 +1,37 @@
+name: Release Runtime
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push events for tags only
+  push:
+    tags:
+      - 'runtime-*'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+# Set an environment variable (that can be overriden) for the Docker Repo
+env:
+  DOCKER_REPO: freeverseio/laos-ownership-node
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    # The type of runner that the job will run on
+    runs-on: 
+      group: laos
+      labels: ubuntu-16-cores
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v3      
+      - uses: ./.github/actions/setup
+
+      - name: Compile runtime
+        run: |
+          cargo build --release --package laos-runtime
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.ref_name }}.compressed.wasm
+          path: target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
